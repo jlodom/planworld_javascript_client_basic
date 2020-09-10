@@ -1,0 +1,205 @@
+body {
+  background-color: white;
+  color: #003286;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: #003286;
+  text-decoration: none;
+}
+
+h3 {
+  text-decoration: underline;
+}
+
+hr {
+  border: 10px solid #003286;
+  width: 628px;
+  border-radius: 5px;
+  margin-left: 0;
+}
+
+form {
+  max-width: 618px;
+}
+
+fieldset {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+#title {
+  font-size: 24px;
+  vertical-align: top;
+}
+
+.imglogo {
+  max-width: 100px;
+  vertical-align: middle;
+  float: left;
+}
+
+.classDescriptionText {
+  font-size: medium;
+  width: 640px;
+}
+
+.cellLabelCLass {
+  padding: 2px;
+  margin: 4px;
+  min-width: 200px;
+  max-width: 400px;
+  border: 1px;
+  border-color: black;
+  border-style: none dotted none none;
+  overflow-wrap: break-word;
+  display: table-cell;
+}
+
+.cellValueArrayClass {}
+
+.cellValueClass {
+  padding: 2px;
+  margin: 4px;
+  width: 400px;
+  overflow-wrap: break-word;
+  color: black;
+  display: table-cell;
+}
+
+.classButton {
+  color: #003286;
+  border: solid #003286;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 4px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.classEquallyAttractiveButton {
+  color: #003286;
+  /* border: solid #28df98; */
+  border: solid #003286;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 4px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.classOptionallyAttractiveButton {
+  color: #003286;
+  /* border: solid #28df98; */
+  border: solid #003286;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 4px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.classLoadingOverlay {
+  display: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #003286;
+  color: #FEFEFE;
+  z-index: 2;
+  cursor: progress;
+  opacity: 80%;
+}
+
+.classLoginOverlay {
+  display: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #003286;
+  color: #FEFEFE;
+  z-index: 2;
+  padding: 16px;
+}
+
+.classloadingtitle {
+  opacity: 100%;
+  font-size: 4em;
+  text-shadow: 0 1px 0 #566379;
+  border-color: white;
+  border-style: double;
+  border-radius: 20px;
+  border-width: 20px;
+  padding: 8px;
+  margin-top: 160px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.classloadingsubtitle {
+  font-size: 0.3em;
+  text-align: center;
+}
+
+.classSyncLabel {}
+
+.classSavedButton {
+  color: #d7a500;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 4px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.classExpandPlaceholder {
+  background-color: #003286;
+  padding: 4px;
+  color: white;
+  border-radius: 6px;
+  width: 380px;
+  text-align: center;
+}
+
+.classContainer {
+  border-style: none;
+  border-color: darkblue;
+  padding: 10px;
+}
+
+
+.rowclass {
+  display: table-row;
+  width: auto;
+  border: 1px solid black;
+  border-style: solid solid solid none;
+}
+
+.rowheader {
+  display: table-header-group;
+  border: 1px solid black;
+  font-weight: bold;
+}
+
+.rowcell {
+  padding: 2px;
+  margin: 4px;
+  width: 25%;
+  border: 1px black;
+  border-style: none dotted none none;
+  overflow-wrap: break-word;
+  display: table-cell;
+}
