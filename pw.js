@@ -34,13 +34,9 @@ window.onload = async () => {
 		}
 	});
 	divLogin.appendChild(labelUsername);
-	divLogin.appendChild(document.createElement('br'));
 	divLogin.appendChild(inputUsername);
-	divLogin.appendChild(document.createElement('br'));
 	divLogin.appendChild(labelPassword);
-	divLogin.appendChild(document.createElement('br'));
 	divLogin.appendChild(inputPassword);
-	divLogin.appendChild(document.createElement('br'));
 	divLogin.appendChild(buttonLogin);
 	document.body.appendChild(divLogin);
 	/* Create (New) Loading Screen */
@@ -48,12 +44,12 @@ window.onload = async () => {
 	divLoading.id = 'loading';
 	divLoading.className = 'classLoadingOverlay';
 	document.body.appendChild(divLoading);
-
 	if (boolNeedLogin) {
 		ShowLoginScreen();
 	}
-	var ver = await PW_GetVersion(baseUrl);
-	console.log(ver);
+	BuildInitialNav();
+	BuildInitialMain();
+	
 };
 
 
@@ -61,12 +57,10 @@ window.onload = async () => {
 
 /* KEY FUNCTIONS */
 
-function RefreshInterface() {
+async function RefreshInterface() {
 	var divWatchList = document.getElementById('divWatchlist');
-	var watchlist = PW_GetWatchlist(baseUrl);
-	/* NEED A FUNCTION TO PARSE WATCHLISTS INCLUDING EMPTY ONES. */
-	divWatchList.appendChild(watchlist);
-	/* LOTS MORE HAPPENS */
+	var watchlist = await PW_GetWatchlist(baseUrl);
+	divWatchList.innerHTML = watchlist;
 }
 
 function InitLoginScreen() {
@@ -100,17 +94,43 @@ async function PW_Debug_Login(localBaseUrl, localUsername, localPassword) {
 	return localIntermediate.pseudologin;
 }
 
-async function PW_GetWatchlist(localBaseUrl) {
-	var localFinalUrl = localBaseUrl + '/3.00/watch/watchlist.json';
+async function PW_Allusers(localBaseUrl) {
+	var localFinalUrl = localBaseUrl + '/3.00/system/userslocal.json?token=' + token;
 	const response = await fetch(localFinalUrl);
-	var localIntermediate = response.json();
-	return localIntermediate.watchlist;
+	var localIntermediate = await response.json();
+	return localIntermediate.userslocal;
+}
+
+async function PW_GetWatchlist(localBaseUrl) {
+	var localFinalUrl = localBaseUrl + '/3.00/watch/watchlist.json?token=' + token;
+	const response = await fetch(localFinalUrl);
+	var localIntermediate = await response.json();
+	if (IsNullOrWhiteSpace(localIntermediate.watchlist)) {
+		return '';
+	}
+	/* Dice it. */
+	else {
+		return localIntermediate.watchlist;	
+	}
 }
 
 async function PW_Finger(localBaseUrl, localUsername) {
-	var localFinalUrl = localBaseUrl + '/3.00/plan/plan/' + localUsername + '.json';
+	var localFinalUrl = localBaseUrl + '/3.00/plan/plan/' + localUsername + '.json?token=' + token;
 	const response = await fetch(localFinalUrl);
-	var localIntermediate = response.json();
+	var localIntermediate = await response.json();
+	return localIntermediate.plan;
+}
+
+
+async function PW_Fixplan(localBaseUrl, localTextPlan) {
+	var localFinalUrl = localBaseUrl + '/3.00/plan/plan.json?token=' + token;
+	var formbody = new URLSearchParams();
+	formbody.append('planworld_post', localTextPlan);
+	const response = await fetch(localFinalUrl, {
+		method: 'POST',
+		body: formbody,
+	});
+	var localIntermediate =  await response.json();
 	return localIntermediate.plan;
 }
 
@@ -118,8 +138,16 @@ async function PW_Finger(localBaseUrl, localUsername) {
 function BuildInitialNav() {
 	var navs = document.getElementsByTagName('nav');
 	var nav = navs[0];
-	nav.appendChild(CreateWatchlistContainerDiv);
+	nav.appendChild(CreateFingerContainerDiv());
+	nav.appendChild(CreateWatchlistContainerDiv());
 	/* MORE TO COME */
+}
+
+function BuildInitialMain() {
+	var mains = document.getElementsByTagName('main');
+	var main = mains[0];
+	main.appendChild(CreatePlanDiv());
+	main.appendChild(CreatePlanWriterDiv());
 }
 
 /* Div Creation */
@@ -150,33 +178,60 @@ function CreateFingerContainerDiv() {
 	labelFingerTitle.innerText = 'Finger A User';
 	var inputFingerText = document.createElement('input');
 	inputFingerText.setAttribute('type', 'text');
+	inputFingerText.id = 'inputFingerText';
 	var buttonFingerSubmit = document.createElement('button');
 	buttonFingerSubmit.id = 'buttonFingerSubmit';
 	buttonFingerSubmit.innerText = 'Finger';
 	buttonFingerSubmit.className = 'classButton';
 	buttonFingerSubmit.addEventListener('click', async function () {
-		var fingerUser = document.getElementById('divFingerTitle').value;
-		currentPlan = await PW_Finger(baseUrl, fingerUser);
-		/* GOT TO FINISH PLACEMENT HERE */
+		var fingerUser = document.getElementById('inputFingerText').value;
+		var currentPlan = await PW_Finger(baseUrl, fingerUser);
+		var divPlan = await document.getElementById('divPlan');
+		divPlan.innerHTML = currentPlan;
 	});
+	divFingerContainer.appendChild(labelFingerTitle);
+	divFingerContainer.appendChild(inputFingerText);
+	divFingerContainer.appendChild(buttonFingerSubmit);
 	return divFingerContainer;
 }
 
-function CreatePlanDiv
+function CreatePlanDiv() {
+	var divPlanContainer = document.createElement('div');
+	divPlanContainer.id = 'divPlanContainer';
+	divPlanContainer.className = 'classContainer';
+	/* We will want to fill in more pieces of this. Username, date, etc. */
+	var divPlan = document.createElement('div');
+	divPlan.id = 'divPlan';
+	divPlan.className = 'classPlan';
+	divPlanContainer.appendChild(divPlan);
+	return divPlanContainer;
+}
 
-/*
-Save for later -- shows how to send a form encoded in the manner expected by Planworld
-async function PW_Debug_Login(localBaseUrl, localUsername, localPassword) {
-	var localFinalUrl = localBaseUrl + '/3.00/debug/pseudologin/' + localUsername + '/' + localPassword + '.json';
-	var formbody = new URLSearchParams();
-	formbody.append('planworld_post', JSON.stringify(''));
-	const response = await fetch(localFinalUrl, {
-		method: 'POST',
-		body: formbody,
+function CreatePlanWriterDiv() {
+	var divPlanWriterContainer = document.createElement('div');
+	divPlanWriterContainer.id = 'divPlanWriterContainer';
+	divPlanWriterContainer.className = 'classContainer';
+	/* We will want to fill in more pieces of this. Username, date, etc. */
+	var textareaPlanWriter = document.createElement('textarea');
+	textareaPlanWriter.id = 'textareaPlanWriter';
+	textareaPlanWriter.className = 'classPlanWriter';
+	var buttonFixPlan = document.createElement('button');
+	buttonFixPlan.id = 'fixplan';
+	buttonFixPlan.className = 'classButton';
+	buttonFixPlan.innerText = 'Fixplan';
+	buttonFixPlan.addEventListener('click', async function () {
+		var textPlanPost = document.getElementById('textareaPlanWriter').value;
+		var successFixplan = await PW_Fixplan(baseUrl, textPlanPost);
+		// THIS WILL LOOK BAD BUT LET'S START
+		this.innerText = successFixplan;
 	});
-	const responsejson = await response.json();
-	return await responsejson;
-}*/
+	divPlanWriterContainer.appendChild(textareaPlanWriter);
+	divPlanWriterContainer.appendChild(buttonFixPlan);
+	return divPlanWriterContainer;
+}
+
+
+
 
 
 /**************************************************/

@@ -2,6 +2,33 @@ body {
   background-color: white;
   color: #003286;
   font-family: Arial, Helvetica, sans-serif;
+  /*font-family: Georgia, Garamond, "Times New Roman", sans-serif;*/
+}
+
+header {
+  padding: 30px;
+  text-align: center;
+  background-color: #003286;
+  color: white;
+  font-size: 4em;
+}
+
+nav {
+  margin-bottom: 2px;
+  text-shadow: 0px 0px #e5ff78;
+  width: 180px;
+  list-style-position: outside;
+  border-style: ridge;
+  border-width: 3px;
+  font-size: 14px;
+  display: block;
+  position: fixed;
+  left: 0;
+}
+
+main {
+  margin-left: 180px;
+  padding: 0px 10px;
 }
 
 a {
@@ -29,15 +56,24 @@ fieldset {
   margin-bottom: 6px;
 }
 
-#title {
-  font-size: 24px;
-  vertical-align: top;
+label {
+  display: block;
+}
+
+input {
+  display: block;
 }
 
 .imglogo {
   max-width: 100px;
   vertical-align: middle;
   float: left;
+}
+
+.classTitle {
+  text-decoration: underline;
+  font-size: 1.2em;
+  display: block;
 }
 
 .classDescriptionText {
@@ -68,10 +104,18 @@ fieldset {
   display: table-cell;
 }
 
+.classPlan {}
+
+.classPlanWriter {
+  height: 300px;
+  width: 100%;
+  display: block;
+}
+
 .classButton {
   color: #003286;
   border: solid #003286;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: bold;
   border-radius: 12px;
   padding: 4px;
@@ -153,8 +197,6 @@ fieldset {
   text-align: center;
 }
 
-.classSyncLabel {}
-
 .classSavedButton {
   color: #d7a500;
   font-size: 24px;
@@ -175,11 +217,15 @@ fieldset {
 }
 
 .classContainer {
-  border-style: none;
+  border-style: solid;
   border-color: darkblue;
   padding: 10px;
 }
 
+.classContent {
+  border-style: solid;
+  border-width: 2px;
+}
 
 .rowclass {
   display: table-row;
