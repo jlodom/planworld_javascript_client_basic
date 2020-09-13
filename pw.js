@@ -3,6 +3,7 @@
 var baseUrl = 'https://pcola.planwatch.world/client';
 var boolNeedLogin = true;
 var token = '0';
+var username = '';
 
 window.onload = async () => {
 	/* Create (New) Login Screen */
@@ -25,10 +26,12 @@ window.onload = async () => {
 	buttonLogin.id = 'buttonlogin';
 	buttonLogin.innerText = 'Login';
 	buttonLogin.addEventListener('click', async function () {
-		var passUsername = document.getElementById('inputusername').value;
-		var passPassword = document.getElementById('inputpassword').value;
-		token = await PW_Debug_Login(baseUrl, passUsername, passPassword);
+		username = document.getElementById('inputusername').value;
+		var password = document.getElementById('inputpassword').value;
+		token = await PW_Debug_Login(baseUrl, username, password);
 		if (token > 0) {
+			BuildInitialNav();
+			BuildInitialMain();
 			HideLoginScreen();
 			RefreshInterface();
 		}
@@ -47,8 +50,6 @@ window.onload = async () => {
 	if (boolNeedLogin) {
 		ShowLoginScreen();
 	}
-	BuildInitialNav();
-	BuildInitialMain();
 	
 };
 
@@ -135,19 +136,21 @@ async function PW_Fixplan(localBaseUrl, localTextPlan) {
 }
 
 /* Attach Specific Divs to HTML 5 Sections */
-function BuildInitialNav() {
+async function BuildInitialNav() {
 	var navs = document.getElementsByTagName('nav');
 	var nav = navs[0];
 	nav.appendChild(CreateFingerContainerDiv());
 	nav.appendChild(CreateWatchlistContainerDiv());
+	nav.appendChild(await CreateAllUsersListDiv());
 	/* MORE TO COME */
 }
 
-function BuildInitialMain() {
+async function BuildInitialMain() {
 	var mains = document.getElementsByTagName('main');
 	var main = mains[0];
 	main.appendChild(CreatePlanDiv());
-	main.appendChild(CreatePlanWriterDiv());
+	var tempDivPlanWriter = await CreatePlanWriterDiv();
+	main.appendChild(tempDivPlanWriter);
 }
 
 /* Div Creation */
@@ -168,6 +171,12 @@ function CreateWatchlistContainerDiv() {
 	return divWatchlistContainer;
 }
 
+async function RefreshWatchlist() {
+	document.getElementById('divWatchList').replaceWith(await PW_GetWatchlist(baseUrl));
+}
+
+
+
 function CreateFingerContainerDiv() {
 	var divFingerContainer = document.createElement('div');
 	divFingerContainer.id = 'divFingerContainer';
@@ -187,6 +196,7 @@ function CreateFingerContainerDiv() {
 		var fingerUser = document.getElementById('inputFingerText').value;
 		var currentPlan = await PW_Finger(baseUrl, fingerUser);
 		var divPlan = await document.getElementById('divPlan');
+		document.getElementById('divCurrentlyReading').innerText = fingerUser;
 		divPlan.innerHTML = currentPlan;
 	});
 	divFingerContainer.appendChild(labelFingerTitle);
@@ -199,15 +209,22 @@ function CreatePlanDiv() {
 	var divPlanContainer = document.createElement('div');
 	divPlanContainer.id = 'divPlanContainer';
 	divPlanContainer.className = 'classContainer';
-	/* We will want to fill in more pieces of this. Username, date, etc. */
+/* We will want to fill in more pieces of this. Username, date, etc. */
+	var divPlanBoilerplate = document.createElement('div');
+	divPlanBoilerplate.innerText = 'Currently reading plan of user: ';
+	var divPlanUserReading = document.createElement('div');
+	divPlanUserReading.id = 'divCurrentlyReading';
+	divPlanUserReading.innerText = '';
 	var divPlan = document.createElement('div');
 	divPlan.id = 'divPlan';
 	divPlan.className = 'classPlan';
+	divPlanBoilerplate.appendChild(divPlanUserReading);
+	divPlanContainer.appendChild(divPlanBoilerplate);
 	divPlanContainer.appendChild(divPlan);
 	return divPlanContainer;
 }
 
-function CreatePlanWriterDiv() {
+async function CreatePlanWriterDiv() {
 	var divPlanWriterContainer = document.createElement('div');
 	divPlanWriterContainer.id = 'divPlanWriterContainer';
 	divPlanWriterContainer.className = 'classContainer';
@@ -219,6 +236,8 @@ function CreatePlanWriterDiv() {
 	buttonFixPlan.id = 'fixplan';
 	buttonFixPlan.className = 'classButton';
 	buttonFixPlan.innerText = 'Fixplan';
+	var ownPlan = await PW_Finger(baseUrl, username);
+	textareaPlanWriter.value = await ownPlan;
 	buttonFixPlan.addEventListener('click', async function () {
 		var textPlanPost = document.getElementById('textareaPlanWriter').value;
 		var successFixplan = await PW_Fixplan(baseUrl, textPlanPost);
@@ -231,7 +250,35 @@ function CreatePlanWriterDiv() {
 }
 
 
-
+async function CreateAllUsersListDiv() {
+	var divAllUsersContainer = document.createElement('div');
+	divAllUsersContainer.id = 'divAllUsers';
+	divAllUsersContainer.className = 'classContainer';
+	var  divAllUsersTitle = document.createElement('div');
+	divAllUsersTitle.id = 'divAllUsersTitle';
+	divAllUsersTitle.className = 'classTitle';
+	divAllUsersTitle.innerHTML = 'All Users';
+	var divAllUsersList = document.createElement('div');
+	divAllUsersList.id = 'divAllUsersList';
+	divAllUsersList.className = 'classContent';
+	var arrayAllUsers = await PW_Allusers(baseUrl);
+	Array.prototype.forEach.call(arrayAllUsers, user => {
+		var currentUser = document.createElement('div'); /* Maybe use <text> tag.? */
+		currentUser.innerText = user;
+		/* Could assign a class if we want. */
+		currentUser.addEventListener('click', async function () {
+		var currentPlan = await PW_Finger(baseUrl, this.innerText);
+		var divPlan = await document.getElementById('divPlan');
+		document.getElementById('divCurrentlyReading').innerText = this.innerText;
+		divPlan.innerHTML = currentPlan;
+		});
+		divAllUsersList.appendChild(currentUser);
+	});
+	divAllUsersContainer.appendChild(divAllUsersTitle);
+	divAllUsersContainer.appendChild(divAllUsersList);
+	return divAllUsersContainer;
+	//PW_Allusers
+}
 
 
 /**************************************************/

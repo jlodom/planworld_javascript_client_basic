@@ -15,19 +15,20 @@ header {
 
 nav {
   margin-bottom: 2px;
+  margin-top: 2px;
   text-shadow: 0px 0px #e5ff78;
   width: 180px;
   list-style-position: outside;
-  border-style: ridge;
-  border-width: 3px;
+  border-style: none;
+  border-width: 0;
   font-size: 14px;
   display: block;
   position: fixed;
-  left: 0;
 }
 
 main {
   margin-left: 180px;
+  margin-top: 2px;
   padding: 0px 10px;
 }
 
