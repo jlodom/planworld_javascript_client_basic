@@ -22,6 +22,12 @@ window.onload = async () => {
 	var inputPassword = document.createElement('input');
 	inputPassword.setAttribute('type', 'password');
 	inputPassword.id = 'inputpassword';
+	inputPassword.addEventListener('keyup', function (e) {
+		if (e.code === 'Enter') {
+			e.preventDefault();
+			document.getElementById("buttonlogin").click();
+		}
+	});
 	var buttonLogin = document.createElement('button');
 	buttonLogin.id = 'buttonlogin';
 	buttonLogin.innerText = 'Login';
@@ -33,6 +39,7 @@ window.onload = async () => {
 			BuildInitialNav();
 			BuildInitialMain();
 			HideLoginScreen();
+			await RefreshWatchlist();
 			RefreshInterface();
 		}
 	});
@@ -50,6 +57,7 @@ window.onload = async () => {
 	if (boolNeedLogin) {
 		ShowLoginScreen();
 	}
+	window.setInterval('RefreshInterface()', 150000); 
 	
 };
 
@@ -59,9 +67,33 @@ window.onload = async () => {
 /* KEY FUNCTIONS */
 
 async function RefreshInterface() {
-	var divWatchList = document.getElementById('divWatchlist');
-	var watchlist = await PW_GetWatchlist(baseUrl);
-	divWatchList.innerHTML = watchlist;
+	/* Only refresh the interface if we are logged in. */
+	if (!boolNeedLogin) {
+	/* One thing we will want to do is check that the token is not expired. */
+		// TOKEN EXPIRY CODE GOES HERE
+		/* Grab data first before we change what the user sees. */
+		var watchlist = await PW_GetWatchlist(baseUrl);
+		var arrayAllUsers = await PW_Allusers(baseUrl);
+		/* Refresh the Watchlist */
+		RefreshWatchlist();
+		/* Refresh the All Users */
+		var divAllUsersList = document.getElementById('divAllUsersList');
+		divAllUsersList.innerHTML = '';
+		Array.prototype.forEach.call(arrayAllUsers, (user) => {
+			var currentUser = document.createElement('div'); /* Maybe use <text> tag.? */
+			currentUser.innerText = user;
+			currentUser.addEventListener('click', async function () {
+				var currentPlan = await PW_Finger(baseUrl, this.innerText);
+				var divPlan = await document.getElementById('divPlan');
+				document.getElementById('divCurrentlyReading').innerText = this.innerText;
+				divPlan.innerHTML = currentPlan;
+			});
+			divAllUsersList.appendChild(currentUser);
+		});
+		/* Reset some buttons. */
+		document.getElementById('buttonAddToWatchlistSubmit').innerText = 'Add User To Watchlist';
+		document.getElementById('fixplan').innerText = 'Fixplan';
+	}
 }
 
 function InitLoginScreen() {
@@ -106,13 +138,25 @@ async function PW_GetWatchlist(localBaseUrl) {
 	var localFinalUrl = localBaseUrl + '/3.00/watch/watchlist.json?token=' + token;
 	const response = await fetch(localFinalUrl);
 	var localIntermediate = await response.json();
-	if (IsNullOrWhiteSpace(localIntermediate.watchlist)) {
-		return '';
+	if (Array.isArray(localIntermediate.watchlist)){
+		return localIntermediate.watchlist;
 	}
-	/* Dice it. */
-	else {
-		return localIntermediate.watchlist;	
+	else{
+		return [];
 	}
+	
+}
+
+async function PW_AddToWatchlist(localBaseUrl, localUsername) {
+	var localFinalUrl = localBaseUrl + '/3.00/watch/add.json?token=' + token;
+	var formbody = new URLSearchParams();
+	formbody.append('planworld_post', localUsername);
+	const response = await fetch(localFinalUrl, {
+			method: 'POST',
+			body: formbody,
+		});
+	var localIntermediate = await response.json();
+	return localIntermediate.add;
 }
 
 async function PW_Finger(localBaseUrl, localUsername) {
@@ -142,6 +186,7 @@ async function BuildInitialNav() {
 	nav.appendChild(CreateFingerContainerDiv());
 	nav.appendChild(CreateWatchlistContainerDiv());
 	nav.appendChild(await CreateAllUsersListDiv());
+	nav.appendChild(CreateAddToWatchlistContainerDiv());
 	/* MORE TO COME */
 }
 
@@ -172,7 +217,20 @@ function CreateWatchlistContainerDiv() {
 }
 
 async function RefreshWatchlist() {
-	document.getElementById('divWatchList').replaceWith(await PW_GetWatchlist(baseUrl));
+	var divNewWatchlist = document.createElement('div');
+	var objectWatchlist = await PW_GetWatchlist(baseUrl);
+	Array.prototype.forEach.call(objectWatchlist, watchlistLine => {
+		const user = watchlistLine.username;
+		const update = new Date(watchlistLine.lastupdate);
+		const read = new Date(watchlistLine.lastview);
+		var divWatchline = document.createElement('div');
+		// WE WILL CHANGE THIS. Lots of proper processing to do.
+		divWatchline.innerHTML = '<b>' + user + '</b> <i>' + update.toUTCString() + '</i>'; 
+		// For the moment we do nothing with 'hasmessage'
+		divNewWatchlist.appendChild(divWatchline);
+	});
+	var divOldWatchlist = document.getElementById('divWatchlist');
+	divOldWatchlist.innerHTML = divNewWatchlist.innerHTML;
 }
 
 
@@ -280,6 +338,27 @@ async function CreateAllUsersListDiv() {
 	//PW_Allusers
 }
 
+function CreateAddToWatchlistContainerDiv() {
+	var divAddToWatchlistContainer = document.createElement('div');
+	divAddToWatchlistContainer.id = 'divAddToWatchlistContainer';
+	divAddToWatchlistContainer.className = 'classContainer';
+	var inputAddToWatchlistText = document.createElement('input');
+	inputAddToWatchlistText.setAttribute('type', 'text');
+	inputAddToWatchlistText.id = 'inputAddToWatchlistText';
+	var buttonAddToWatchlistSubmit = document.createElement('button');
+	buttonAddToWatchlistSubmit.id = 'buttonAddToWatchlistSubmit';
+	buttonAddToWatchlistSubmit.innerText = 'Add User To Watchlist';
+	buttonAddToWatchlistSubmit.className = 'classButton';
+	buttonAddToWatchlistSubmit.addEventListener('click', async function () {
+		var addtowatchlistUser = document.getElementById('inputAddToWatchlistText').value;
+		var success = await PW_AddToWatchlist(baseUrl, addtowatchlistUser);
+		this.innerHTML = success;
+		RefreshInterface();
+	});
+	divAddToWatchlistContainer.appendChild(inputAddToWatchlistText);
+	divAddToWatchlistContainer.appendChild(buttonAddToWatchlistSubmit);
+	return divAddToWatchlistContainer;
+}
 
 /**************************************************/
 
